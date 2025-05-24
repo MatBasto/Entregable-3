@@ -1,0 +1,32 @@
+.registrar-container {
+  padding: 40px 20px;
+  background-color: #ffffff;
+  box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
+  margin-top: 40px;
+  border-radius: 8px;
+}
+
+.registrar-title {
+  font-weight: bold;
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.form-section {
+  margin-top: 20px;
+  font-weight: bold;
+}
+
+.file-input {
+  margin-top: 10px;
+}
+
+.preview-img {
+  width: 120px;
+  height: auto;
+  margin-right: 10px;
+  margin-top: 10px;
+  border-radius: 5px;
+  object-fit: cover;
+  border: 1px solid #ccc;
+}

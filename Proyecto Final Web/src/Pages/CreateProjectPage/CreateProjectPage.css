@@ -1,0 +1,45 @@
+.create-container {
+  padding: 2rem 1rem;
+  background-color: #f5f5f5;
+  margin-top: 2rem;
+  border-radius: 8px;
+}
+
+.create-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-weight: bold;
+}
+
+.integrantes-section {
+  margin-top: 2rem;
+  font-weight: bold;
+}
+
+.integrante-group {
+  margin-bottom: 1rem;
+}
+
+.add-button {
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  display: block;
+  background-color: transparent;
+  border: 1px solid #1976d2;
+  color: #1976d2;
+  font-weight: bold;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.submit-button {
+  display: block;
+  background-color: #1976d2;
+  color: white;
+  font-weight: bold;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}

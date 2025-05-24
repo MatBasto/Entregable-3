@@ -1,0 +1,38 @@
+.titulo-principal {
+  margin-top: 2rem;
+  text-align: center;
+  color: #1976d2;
+}
+
+.formulario-usuario {
+  margin-top: 2rem;
+  padding: 1rem;
+  border-radius: 6px;
+  background-color: #f7f7f7;
+}
+
+.subtitulo {
+  margin-bottom: 1rem;
+  color: #444;
+}
+
+.mensaje-error {
+  margin-bottom: 1rem;
+}
+
+.campos-formulario {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.tabla-usuarios {
+  margin-top: 1rem;
+}
+
+.acceso-denegado {
+  margin-top: 4rem;
+  text-align: center;
+  color: red;
+}

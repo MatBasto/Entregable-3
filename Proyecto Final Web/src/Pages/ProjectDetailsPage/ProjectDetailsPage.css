@@ -1,0 +1,57 @@
+.project-details-page {
+  padding: 1rem;
+}
+
+.project-container {
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.08);
+}
+
+.project-title {
+  margin-bottom: 1rem;
+  color: #1976d2;
+  font-weight: bold;
+}
+
+.project-info {
+  margin-bottom: 1rem;
+}
+
+.project-section {
+  margin-top: 2rem;
+}
+
+.project-ul {
+  list-style: disc;
+  padding-left: 1.5rem;
+}
+
+.estado-form {
+  margin-top: 2rem;
+  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+}
+
+.estado-select {
+  margin-top: 0.5rem;
+}
+
+.estado-textarea {
+  margin-top: 1rem;
+}
+
+.estado-boton {
+  align-self: flex-start;
+  margin-top: 1rem;
+}
+
+.pdf-button {
+  margin-top: 2rem;
+}
+
+.bitacora-nueva-btn {
+  margin-top: 1rem;
+}

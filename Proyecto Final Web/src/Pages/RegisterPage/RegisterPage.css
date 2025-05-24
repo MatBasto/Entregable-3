@@ -1,0 +1,27 @@
+.register-container {
+  margin-top: 3rem;
+  padding: 2rem;
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.register-title {
+  text-align: center;
+  margin-bottom: 2rem;
+  color: #1976d2;
+}
+
+.register-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.register-button {
+  margin-top: 1.5rem;
+}
+
+.register-alert {
+  margin-bottom: 1.5rem;
+}

@@ -1,0 +1,42 @@
+.bitacora-container {
+  margin-top: 2rem;
+  padding: 1rem;
+}
+
+.bitacora-title {
+  margin-bottom: 1.5rem;
+  font-weight: bold;
+  text-align: center;
+}
+
+.bitacora-item {
+  margin-bottom: 0.5rem;
+}
+
+.bitacora-section {
+  margin-top: 1.2rem;
+  font-weight: bold;
+}
+
+.bitacora-text {
+  margin-bottom: 1rem;
+}
+
+.bitacora-fotos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.bitacora-img {
+  width: 100%;
+  max-width: 200px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+.bitacora-volver-btn {
+  display: block;
+  margin: 0 auto;
+}

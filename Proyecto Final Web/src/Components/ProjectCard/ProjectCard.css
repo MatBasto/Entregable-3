@@ -1,0 +1,48 @@
+.project-card {
+  height: 100%;
+  transition: transform 0.2s ease;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+}
+
+.project-card:hover {
+  transform: scale(1.02);
+}
+
+.project-card-link {
+  text-decoration: none;
+  color: inherit;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.project-title {
+  font-size: 1.1rem;
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+}
+
+.project-area {
+  font-size: 0.9rem;
+  color: #666;
+}
+
+.project-card-section {
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+.project-img-container {
+  margin-top: 0.75rem;
+  text-align: center;
+}
+
+.project-card-img {
+  max-width: 100%;
+  max-height: 150px;
+  object-fit: contain;
+  border-radius: 4px;
+}
