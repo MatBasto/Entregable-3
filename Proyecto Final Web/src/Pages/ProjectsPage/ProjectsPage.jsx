@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Container,
   Typography,
@@ -11,35 +11,8 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import ProjectCard from "../../Components/ProjectCard/ProjectCard";
 import { useAuth } from "../../Context/AuthContext";
+import { supabase } from "../../supabase";
 import "./ProjectsPage.css";
-
-// Datos simulados (futura conexión con Supabase)
-const allProjects = [
-  {
-    id: 1,
-    titulo: "Energías Renovables en la Escuela",
-    area: "Ciencias Naturales",
-    institucion: "Colegio El Saber",
-    docente: "Marta",
-    estado: "Activo",
-  },
-  {
-    id: 2,
-    titulo: "Huerta Escolar Sostenible",
-    area: "Tecnología",
-    institucion: "Colegio Campestre",
-    docente: "Juan",
-    estado: "Formulación",
-  },
-  {
-    id: 3,
-    titulo: "Reciclaje Creativo",
-    area: "Ciencias Sociales",
-    institucion: "Colegio El Saber",
-    docente: "Marta",
-    estado: "Finalizado",
-  },
-];
 
 export default function ProjectsPage() {
   const { user } = useAuth();
@@ -48,6 +21,29 @@ export default function ProjectsPage() {
     institucion: "",
     docente: "",
   });
+  const [allProjects, setAllProjects] = useState([]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const { data, error } = await supabase
+        .from("proyectos")
+        .select("*, usuarios:docente_id(nombre)");
+
+      if (error) {
+        console.error("Error al obtener proyectos:", error.message);
+        return;
+      }
+
+      const proyectosConDocente = data.map((p) => ({
+        ...p,
+        docente: p.usuarios?.nombre || "Sin asignar",
+      }));
+
+      setAllProjects(proyectosConDocente);
+    };
+
+    fetchProjects();
+  }, []);
 
   const instituciones = [...new Set(allProjects.map((p) => p.institucion))];
   const docentes = [...new Set(allProjects.map((p) => p.docente))];

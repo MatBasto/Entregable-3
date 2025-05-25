@@ -7,6 +7,7 @@ import ProjectDetailsPage from "../Pages/ProjectDetailsPage/ProjectDetailsPage";
 import RegistrarBitacora from "../Pages/BitacorasPage/RegistrarBitacora";
 import BitacoraDetalle from "../Pages/BitacorasPage/BitacoraDetalle";
 import UserManagement from "../Pages/UserManagement/UserManagement";
+import CreateProjectPage from "../Pages/CreateProjectPage/CreateProjectPage";
 import { useAuth } from "../Context/AuthContext";
 
 export default function AppRoutes() {
@@ -18,7 +19,12 @@ export default function AppRoutes() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
       <Route path="/projects" element={<ProjectsPage />} />
+
+      {user?.rol === "docente" && (
+        <Route path="/projects/create" element={<CreateProjectPage />} />
+      )}
       <Route path="/projects/:id" element={<ProjectDetailsPage />} />
+
 
       {user?.rol === "estudiante" && (
         <Route path="/projects/:id/bitacora/nueva" element={<RegistrarBitacora />} />

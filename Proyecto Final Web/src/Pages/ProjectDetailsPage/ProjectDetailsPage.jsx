@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   Container,
   Typography,
@@ -10,64 +10,74 @@ import {
   TextField,
   Button,
 } from "@mui/material";
-import { useState } from "react";
+import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { supabase } from "../../supabase";
 import "./ProjectDetailsPage.css";
-
-// Datos simulados
-const proyectosSimulados = [
-  {
-    id: 1,
-    titulo: "Energías Renovables en la Escuela",
-    area: "Ciencias Naturales",
-    objetivos: "Promover el uso de energías limpias.",
-    cronograma: "Marzo - Junio",
-    presupuesto: "$500.000",
-    institucion: "Colegio El Saber",
-    observaciones: "Proyecto activo",
-    estado: "Activo",
-    docente: "Carlos Docente",
-    integrantes: [
-      { nombre: "Laura", apellido: "Estudiante", identificacion: "1003", grado: "10°" },
-      { nombre: "Pedro", apellido: "Sin Rol", identificacion: "1004", grado: "11°" },
-    ],
-    historialEstado: [
-      { fecha: "2025-03-01", estado: "Formulación" },
-      { fecha: "2025-03-15", estado: "Evaluación" },
-      { fecha: "2025-04-01", estado: "Activo" },
-    ],
-    bitacoras: [
-      {
-        id: 1,
-        fecha: "2025-04-10",
-        descripcion: "Instalación de paneles",
-        observaciones: "Trabajo exitoso",
-        fotos: ["https://via.placeholder.com/150"],
-      },
-    ],
-  },
-];
 
 export default function ProjectDetailsPage() {
   const { id } = useParams();
   const { user } = useAuth();
-  const project = proyectosSimulados.find((p) => p.id === parseInt(id));
-  const [estado, setEstado] = useState(project?.estado || "");
+  const [project, setProject] = useState(null);
+  const [historial, setHistorial] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [estado, setEstado] = useState("");
   const [observacionEstado, setObservacionEstado] = useState("");
 
-  if (!project) {
-    return <Typography variant="h5">Proyecto no encontrado</Typography>;
-  }
+  useEffect(() => {
+    const fetchProject = async () => {
+      const { data, error } = await supabase
+        .from("proyectos")
+        .select(`*, usuarios:docente_id(nombre),
+                  integrantes:integrantes(id, estudiante:usuarios(id, nombre, grado, identificacion)),
+                  bitacoras(*)`)
+        .eq("id", id)
+        .single();
 
-  const esIntegrante =
-    user?.rol === "estudiante" &&
-    project.integrantes.some((i) => i.identificacion === user.identificacion);
+      if (error) {
+        console.error("Error al obtener proyecto", error);
+      } else {
+        setProject(data);
+        setEstado(data.estado);
+      }
 
-  const cambiarEstado = () => {
-    alert(`Estado cambiado a ${estado}\nObservación: ${observacionEstado}`);
-    // Aquí iría la lógica para actualizar en Supabase
+      const { data: historialEstados } = await supabase
+        .from("historial_estados")
+        .select("fecha, estado, observaciones")
+        .eq("proyecto_id", id)
+        .order("fecha", { ascending: true });
+
+      setHistorial(historialEstados || []);
+      setLoading(false);
+    };
+
+    fetchProject();
+  }, [id]);
+
+  const cambiarEstado = async () => {
+    const { error } = await supabase.from("proyectos").update({ estado, observaciones: observacionEstado }).eq("id", id);
+
+    const { error: historialError } = await supabase.from("historial_estados").insert({
+      proyecto_id: id,
+      estado,
+      fecha: new Date().toISOString().slice(0, 10),
+      observaciones: observacionEstado,
+    });
+
+    if (!error && !historialError) {
+      alert("Estado actualizado correctamente");
+      setProject({ ...project, estado, observaciones: observacionEstado });
+      setHistorial([...historial, {
+        estado,
+        fecha: new Date().toISOString().slice(0, 10),
+        observaciones: observacionEstado,
+      }]);
+      setObservacionEstado("");
+    } else {
+      alert("Error al actualizar el estado o historial");
+    }
   };
 
   const obtenerImagenBase64 = (url) =>
@@ -92,7 +102,7 @@ export default function ProjectDetailsPage() {
 
     doc.setFontSize(12);
     doc.text(`Área: ${project.area}`, 14, 30);
-    doc.text(`Docente: ${project.docente}`, 14, 37);
+    doc.text(`Docente: ${project.usuarios?.nombre || ""}`, 14, 37);
     doc.text(`Institución: ${project.institucion}`, 14, 44);
     doc.text(`Cronograma: ${project.cronograma}`, 14, 51);
     doc.text(`Presupuesto: ${project.presupuesto}`, 14, 58);
@@ -110,58 +120,71 @@ export default function ProjectDetailsPage() {
 
     autoTable(doc, {
       startY: 115,
-      head: [["Nombre", "Apellido", "ID", "Grado"]],
+      head: [["Nombre", "ID", "Grado"]],
       body: project.integrantes.map((i) => [
-        i.nombre,
-        i.apellido,
-        i.identificacion,
-        i.grado,
+        i.estudiante?.nombre || "",
+        i.estudiante?.identificacion || "",
+        i.estudiante?.grado || "",
       ]),
       theme: "grid",
-      headStyles: { fillColor: [41, 128, 185] },
     });
 
-    autoTable(doc, {
-      startY: doc.lastAutoTable.finalY + 10,
-      head: [["Fecha", "Estado"]],
-      body: project.historialEstado.map((h) => [h.fecha, h.estado]),
-      headStyles: { fillColor: [34, 153, 84] },
-    });
+    let y = doc.lastAutoTable.finalY + 10;
 
-    if (project.bitacoras?.length > 0) {
-      let y = doc.lastAutoTable.finalY + 20;
+    if (historial.length > 0) {
       doc.setFont("helvetica", "bold");
-      doc.text("Bitácoras:", 14, y);
+      doc.text("Historial de Estados:", 14, y);
+      y += 6;
+
+      autoTable(doc, {
+        startY: y,
+        head: [["Fecha", "Estado", "Observaciones"]],
+        body: historial.map((h) => [h.fecha, h.estado, h.observaciones || ""]),
+        theme: "striped",
+      });
+
+      y = doc.lastAutoTable.finalY + 10;
+    }
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Bitácoras:", 14, y);
+    y += 8;
+
+    for (const b of project.bitacoras) {
+      doc.setFont("helvetica", "bold");
+      doc.text(`${b.fecha} - ${b.descripcion}`, 14, y);
+      y += 6;
+      doc.setFont("helvetica", "normal");
+      doc.text(`Observaciones: ${b.observaciones}`, 14, y);
       y += 8;
 
-      for (const b of project.bitacoras) {
-        doc.text(`${b.fecha} - ${b.descripcion}`, 14, y);
-        y += 6;
-        doc.setFont("helvetica", "normal");
-        doc.text(`Observaciones: ${b.observaciones}`, 14, y);
-        y += 10;
-
-        for (const foto of b.fotos) {
-          try {
-            const imgData = await obtenerImagenBase64(foto);
-            doc.addImage(imgData, "JPEG", 14, y, 50, 35);
-            y += 40;
-          } catch {
-            doc.text("Error al cargar imagen.", 14, y);
-            y += 10;
-          }
+      for (const foto of b.fotos || []) {
+        try {
+          const imgData = await obtenerImagenBase64(foto);
+          doc.addImage(imgData, "JPEG", 14, y, 50, 35);
+          y += 40;
+        } catch {
+          doc.text("Error al cargar imagen", 14, y);
+          y += 10;
         }
+      }
 
-        y += 10;
-        if (y > 260) {
-          doc.addPage();
-          y = 20;
-        }
+      y += 10;
+      if (y > 260) {
+        doc.addPage();
+        y = 20;
       }
     }
 
     doc.save(`proyecto_${project.id}.pdf`);
   };
+
+  if (loading) return <Typography>Cargando...</Typography>;
+  if (!project) return <Typography>Proyecto no encontrado</Typography>;
+
+  const esIntegrante =
+    user?.rol === "estudiante" &&
+    project.integrantes.some((i) => i.estudiante?.id === user.id);
 
   return (
     <Container className="project-details-page">
@@ -172,7 +195,7 @@ export default function ProjectDetailsPage() {
 
         <Box className="project-info">
           <Typography><strong>Área:</strong> {project.area}</Typography>
-          <Typography><strong>Docente:</strong> {project.docente}</Typography>
+          <Typography><strong>Docente:</strong> {project.usuarios?.nombre}</Typography>
           <Typography><strong>Cronograma:</strong> {project.cronograma}</Typography>
           <Typography><strong>Presupuesto:</strong> {project.presupuesto}</Typography>
           <Typography><strong>Institución:</strong> {project.institucion}</Typography>
@@ -184,7 +207,7 @@ export default function ProjectDetailsPage() {
           <ul className="project-ul">
             {project.integrantes.map((i, idx) => (
               <li key={idx}>
-                {i.nombre} {i.apellido} - ID: {i.identificacion} - Grado: {i.grado}
+                {i.estudiante?.nombre} - ID: {i.estudiante?.identificacion} - Grado: {i.estudiante?.grado}
               </li>
             ))}
           </ul>
@@ -194,14 +217,18 @@ export default function ProjectDetailsPage() {
           <Typography><strong>Observaciones:</strong> {project.observaciones}</Typography>
         </Box>
 
-        <Box className="project-section">
-          <Typography variant="h6">Historial de Estados</Typography>
-          <ul className="project-ul">
-            {project.historialEstado.map((h, i) => (
-              <li key={i}><strong>{h.fecha}:</strong> {h.estado}</li>
-            ))}
-          </ul>
-        </Box>
+        {historial.length > 0 && (
+          <Box className="project-section">
+            <Typography variant="h6">Historial de Estados</Typography>
+            <ul className="project-ul">
+              {historial.map((h, idx) => (
+                <li key={idx}>
+                  <strong>{h.fecha}:</strong> {h.estado} - {h.observaciones || "Sin observaciones"}
+                </li>
+              ))}
+            </ul>
+          </Box>
+        )}
 
         {user?.rol === "coordinador" && (
           <Box className="estado-form">
@@ -259,7 +286,7 @@ export default function ProjectDetailsPage() {
             <Button
               variant="outlined"
               component={Link}
-              to={`/proyectos/${project.id}/bitacora/nueva`}
+              to={`/projects/${project.id}/bitacora/nueva`}
               className="bitacora-nueva-btn"
             >
               + Nueva Bitácora

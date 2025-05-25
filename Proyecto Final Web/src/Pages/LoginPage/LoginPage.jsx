@@ -19,9 +19,10 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
-    const result = login(correo, password);
+
+    const result = await login(correo, password);
 
     if (result.success) {
       setError("");
@@ -54,6 +55,7 @@ export default function LoginPage() {
             value={correo}
             onChange={(e) => setCorreo(e.target.value)}
             required
+            margin="normal"
           />
           <TextField
             label="Contraseña"
@@ -63,8 +65,9 @@ export default function LoginPage() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            margin="normal"
           />
-          <Button type="submit" variant="contained" className="login-button">
+          <Button type="submit" variant="contained" fullWidth className="login-button" sx={{ mt: 2 }}>
             Iniciar sesión
           </Button>
         </form>

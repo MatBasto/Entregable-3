@@ -14,6 +14,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useAuth } from "../../Context/AuthContext";
+import { supabase } from "../../supabase";
 import "./UserManagement.css";
 
 export default function UserManagement() {
@@ -24,6 +25,7 @@ export default function UserManagement() {
     correo: "",
     password: "",
     rol: "estudiante",
+    identificacion: "",
   });
 
   const [modoEdicion, setModoEdicion] = useState(null);
@@ -31,12 +33,20 @@ export default function UserManagement() {
     nombre: "",
     correo: "",
     rol: "",
+    edad: "",
+    colegio: "",
+    grado: "",
+    identificacion: "",
   });
 
   const [error, setError] = useState("");
 
   if (user?.rol !== "coordinador") {
-    return <Typography variant="h5" className="acceso-denegado">Acceso denegado</Typography>;
+    return (
+      <Typography variant="h5" className="acceso-denegado">
+        Acceso denegado
+      </Typography>
+    );
   }
 
   const handleChange = (e) => {
@@ -47,33 +57,52 @@ export default function UserManagement() {
     setUsuarioEditado({ ...usuarioEditado, [e.target.name]: e.target.value });
   };
 
-  const agregarUsuario = () => {
-    if (!nuevoUsuario.nombre || !nuevoUsuario.correo || !nuevoUsuario.password) {
+  const agregarUsuario = async () => {
+    const { nombre, correo, password, rol, identificacion } = nuevoUsuario;
+
+    if (!nombre || !correo || !password || !identificacion) {
       setError("Todos los campos son obligatorios.");
       return;
     }
 
-    const existe = usuarios.some((u) => u.correo === nuevoUsuario.correo);
+    const existe = usuarios.some((u) => u.correo === correo || u.identificacion === identificacion);
     if (existe) {
-      setError("Ya existe una cuenta con este correo.");
+      setError("Ya existe un usuario con este correo o identificación.");
       return;
     }
 
     const nuevo = {
       ...nuevoUsuario,
-      id: usuarios.length + 1,
-      identificacion: Date.now().toString(),
       edad: 0,
       colegio: "",
       grado: "",
     };
 
-    setUsuarios([...usuarios, nuevo]);
-    setNuevoUsuario({ nombre: "", correo: "", password: "", rol: "estudiante" });
+    const { data, error: supabaseError } = await supabase
+      .from("usuarios")
+      .insert(nuevo)
+      .select()
+      .single();
+
+    if (supabaseError) {
+      console.error("Error al agregar usuario:", supabaseError.message);
+      setError("Ocurrió un error al registrar el usuario.");
+      return;
+    }
+
+    setUsuarios([...usuarios, data]);
+    setNuevoUsuario({ nombre: "", correo: "", password: "", rol: "estudiante", identificacion: "" });
     setError("");
   };
 
-  const eliminarUsuario = (id) => {
+  const eliminarUsuario = async (id) => {
+    const { error } = await supabase.from("usuarios").delete().eq("id", id);
+    if (error) {
+      console.error("Error al eliminar usuario:", error.message);
+      alert("Error al eliminar el usuario");
+      return;
+    }
+
     setUsuarios(usuarios.filter((u) => u.id !== id));
   };
 
@@ -84,13 +113,40 @@ export default function UserManagement() {
 
   const cancelarEdicion = () => {
     setModoEdicion(null);
-    setUsuarioEditado({ nombre: "", correo: "", rol: "" });
+    setUsuarioEditado({
+      nombre: "",
+      correo: "",
+      rol: "",
+      edad: "",
+      colegio: "",
+      grado: "",
+      identificacion: "",
+    });
   };
 
-  const guardarUsuario = () => {
+  const guardarUsuario = async () => {
+    const { error } = await supabase
+      .from("usuarios")
+      .update({
+        nombre: usuarioEditado.nombre,
+        correo: usuarioEditado.correo,
+        rol: usuarioEditado.rol,
+        edad: usuarioEditado.edad,
+        colegio: usuarioEditado.colegio,
+        grado: usuarioEditado.grado,
+        identificacion: usuarioEditado.identificacion,
+      })
+      .eq("id", usuarioEditado.id);
+
+    if (error) {
+      console.error("Error al actualizar usuario:", error.message);
+      alert("Error al guardar los cambios.");
+      return;
+    }
+
     setUsuarios(
       usuarios.map((u) =>
-        u.id === usuarioEditado.id ? usuarioEditado : u
+        u.id === usuarioEditado.id ? { ...u, ...usuarioEditado } : u
       )
     );
     cancelarEdicion();
@@ -110,9 +166,11 @@ export default function UserManagement() {
           <TextField label="Nombre" name="nombre" value={nuevoUsuario.nombre} onChange={handleChange} />
           <TextField label="Correo" name="correo" value={nuevoUsuario.correo} onChange={handleChange} />
           <TextField label="Contraseña" name="password" type="password" value={nuevoUsuario.password} onChange={handleChange} />
+          <TextField label="Identificación" name="identificacion" value={nuevoUsuario.identificacion} onChange={handleChange} />
           <TextField select label="Rol" name="rol" value={nuevoUsuario.rol} onChange={handleChange}>
             <MenuItem value="estudiante">Estudiante</MenuItem>
             <MenuItem value="docente">Docente</MenuItem>
+            <MenuItem value="coordinador">Coordinador</MenuItem>
           </TextField>
           <Button variant="contained" onClick={agregarUsuario}>
             Agregar
@@ -128,11 +186,15 @@ export default function UserManagement() {
             <TableCell>Nombre</TableCell>
             <TableCell>Correo</TableCell>
             <TableCell>Rol</TableCell>
+            <TableCell>Identificación</TableCell>
+            <TableCell>Edad</TableCell>
+            <TableCell>Colegio</TableCell>
+            <TableCell>Grado</TableCell>
             <TableCell>Acciones</TableCell>
           </TableRow>
         </TableHead>
         <TableBody>
-          {usuarios.map((u) => (
+          {(usuarios || []).map((u) => (
             <TableRow key={u.id}>
               <TableCell>
                 {modoEdicion === u.id ? (
@@ -155,6 +217,26 @@ export default function UserManagement() {
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (
+                  <TextField name="identificacion" value={usuarioEditado.identificacion || ""} onChange={handleEditChange} />
+                ) : u.identificacion || "-"}
+              </TableCell>
+              <TableCell>
+                {modoEdicion === u.id ? (
+                  <TextField name="edad" value={usuarioEditado.edad || ""} onChange={handleEditChange} />
+                ) : u.edad || "-"}
+              </TableCell>
+              <TableCell>
+                {modoEdicion === u.id ? (
+                  <TextField name="colegio" value={usuarioEditado.colegio || ""} onChange={handleEditChange} />
+                ) : u.colegio || "-"}
+              </TableCell>
+              <TableCell>
+                {modoEdicion === u.id ? (
+                  <TextField name="grado" value={usuarioEditado.grado || ""} onChange={handleEditChange} />
+                ) : u.grado || "-"}
+              </TableCell>
+              <TableCell>
+                {modoEdicion === u.id ? (
                   <>
                     <Button color="success" onClick={guardarUsuario}>
                       Guardar
@@ -165,7 +247,7 @@ export default function UserManagement() {
                   </>
                 ) : (
                   <>
-                    <Button color="primary" onClick={() => iniciarEdicion(u)} disabled={!u.rol}>
+                    <Button color="primary" onClick={() => iniciarEdicion(u)}>
                       Editar
                     </Button>
                     <Button color="error" onClick={() => eliminarUsuario(u.id)}>
