@@ -1,4 +1,7 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
 export default defineConfig({
-  base: '/', // para rutas limpias en producción
   plugins: [react()],
-});
+  base: '/'
+})
