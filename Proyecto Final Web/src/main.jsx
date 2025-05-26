@@ -5,9 +5,9 @@ import { BrowserRouter } from "react-router-dom";
 import { AuthProvider } from "./Context/AuthContext";
 import { createClient } from "@supabase/supabase-js";
 
-// Configuración Supabase
-const supabaseUrl = "https://hksxaaphqkzlaegfucmo.supabase.co";
-const supabaseAnonKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3hhYXBocWt6bGFlZ2Z1Y21vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNzA0MjcsImV4cCI6MjA2MzY0NjQyN30.Up5MQ3JslFIKpw3QGqJ6W76AB4aWMyOLBTeoqMrEvHw";
+// Configuración Supabase usando variables de entorno
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || "https://hksxaaphqkzlaegfucmo.supabase.co";
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imhrc3hhYXBocWt6bGFlZ2Z1Y21vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwNzA0MjcsImV4cCI6MjA2MzY0NjQyN30.Up5MQ3JslFIKpw3QGqJ6W76AB4aWMyOLBTeoqMrEvHw";
 
 // Cliente Supabase
 export const supabase = createClient(supabaseUrl, supabaseAnonKey);
