@@ -1,20 +1,4 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-
-// https://vite.dev/config/
 export default defineConfig({
+  base: '/', // para rutas limpias en producción
   plugins: [react()],
-  base: './', // Rutas relativas para mejor compatibilidad con Vercel
-  build: {
-    outDir: 'dist',
-    assetsDir: 'assets',
-    rollupOptions: {
-      output: {
-        manualChunks: undefined,
-      },
-    },
-  },
-  server: {
-    historyApiFallback: true, // Para desarrollo local
-  },
-})
+});
