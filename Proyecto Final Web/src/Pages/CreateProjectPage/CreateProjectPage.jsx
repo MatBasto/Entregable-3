@@ -5,7 +5,6 @@ import {
   Button,
   Typography,
   Box,
-  Grid,
   Alert,
 } from "@mui/material";
 import { useAuth } from "../../Context/AuthContext";
@@ -130,82 +129,96 @@ export default function CreateProjectPage() {
     }
   };
 
+  const formFields = [
+    { label: "Título", name: "titulo", required: true },
+    { label: "Área", name: "area", required: true },
+    { label: "Objetivos", name: "objetivos", required: true },
+    { label: "Cronograma", name: "cronograma", required: true },
+    { label: "Presupuesto", name: "presupuesto", required: true },
+    { label: "Institución", name: "institucion", required: true },
+    { label: "Observaciones", name: "observaciones", required: false },
+  ];
+
   return (
-    <Container maxWidth="md">
-      <Box className="create-container">
-        <Typography variant="h4" className="create-title">
-          Crear Nuevo Proyecto
-        </Typography>
-
-        {error && <Alert severity="error">{error}</Alert>}
-        {aviso && <Alert severity="warning">{aviso}</Alert>}
-
-        <form onSubmit={handleSubmit}>
-          <Grid container spacing={2}>
-            {[
-              { label: "Título", name: "titulo" },
-              { label: "Área", name: "area" },
-              { label: "Objetivos", name: "objetivos" },
-              { label: "Cronograma", name: "cronograma" },
-              { label: "Presupuesto", name: "presupuesto" },
-              { label: "Institución", name: "institucion" },
-              { label: "Observaciones", name: "observaciones" },
-            ].map((field) => (
-              <Grid item xs={12} sm={6} key={field.name}>
-                <TextField
-                  fullWidth
-                  label={field.label}
-                  name={field.name}
-                  value={formData[field.name]}
-                  onChange={handleChange}
-                  required
-                />
-              </Grid>
-            ))}
-          </Grid>
-
-          <Typography variant="h6" sx={{ mt: 3 }}>
-            Estudiantes (por identificación)
+    <div className="create-page">
+      <Container maxWidth="lg">
+        <Box className="create-container">
+          <Typography variant="h4" className="create-title">
+            Crear Nuevo Proyecto
           </Typography>
 
-          {integrantes.map((i, idx) => (
-            <Box key={idx} sx={{ mt: 2 }}>
-              <TextField
-                fullWidth
-                label={`Identificación del estudiante ${idx + 1}`}
-                value={i.identificacion}
-                onChange={(e) => handleIdentificacionChange(idx, e.target.value)}
-                required
-              />
-              {i.identificacion && (
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {i.nombre ? (
-                    <span style={{ color: "green" }}>
-                      ✓ {i.nombre} encontrado
-                    </span>
-                  ) : (
-                    <span style={{ color: "red" }}>
-                      ✗ No encontrado
-                    </span>
+          <div className="alert-container">
+            {error && <Alert severity="error">{error}</Alert>}
+            {aviso && <Alert severity="warning">{aviso}</Alert>}
+          </div>
+
+          <form onSubmit={handleSubmit}>
+            <div className="form-grid">
+              {formFields.map((field) => (
+                <div key={field.name} className="form-field">
+                  <TextField
+                    fullWidth
+                    label={field.label}
+                    name={field.name}
+                    value={formData[field.name]}
+                    onChange={handleChange}
+                    required={field.required}
+                    multiline={field.name === "objetivos" || field.name === "observaciones"}
+                    rows={field.name === "objetivos" || field.name === "observaciones" ? 3 : 1}
+                  />
+                </div>
+              ))}
+            </div>
+
+            <div className="integrantes-section">
+              <Typography variant="h6" className="integrantes-title">
+                Estudiantes del Proyecto
+              </Typography>
+
+              {integrantes.map((integrante, index) => (
+                <div key={index} className="integrante-group">
+                  <div className="integrante-field">
+                    <TextField
+                      fullWidth
+                      label={`Identificación del estudiante ${index + 1}`}
+                      value={integrante.identificacion}
+                      onChange={(e) => handleIdentificacionChange(index, e.target.value)}
+                      required
+                      placeholder="Ingrese la identificación del estudiante"
+                    />
+                  </div>
+                  
+                  {integrante.identificacion && (
+                    <div className={`student-status ${
+                      integrante.nombre ? 'student-found' : 'student-not-found'
+                    }`}>
+                      {integrante.nombre ? (
+                        `✓ ${integrante.nombre} - Estudiante encontrado`
+                      ) : (
+                        "✗ Estudiante no encontrado en el sistema"
+                      )}
+                    </div>
                   )}
-                </Typography>
-              )}
-            </Box>
-          ))}
+                </div>
+              ))}
 
-          <Button
-            type="button"
-            onClick={agregarCampoIdentificacion}
-            sx={{ mt: 2 }}
-          >
-            + Agregar otro estudiante
-          </Button>
+              <button
+                type="button"
+                onClick={agregarCampoIdentificacion}
+                className="add-student-button"
+              >
+                + Agregar otro estudiante
+              </button>
+            </div>
 
-          <Button type="submit" variant="contained" sx={{ mt: 3 }}>
-            Registrar Proyecto
-          </Button>
-        </form>
-      </Box>
-    </Container>
+            <div className="submit-section">
+              <button type="submit" className="submit-button">
+                Registrar Proyecto
+              </button>
+            </div>
+          </form>
+        </Box>
+      </Container>
+    </div>
   );
 }

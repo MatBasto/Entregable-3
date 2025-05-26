@@ -1,15 +1,4 @@
 import { useEffect, useState } from "react";
-import {
-  Container,
-  Typography,
-  Box,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  TextField,
-  Button,
-} from "@mui/material";
 import { useParams, Link } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import jsPDF from "jspdf";
@@ -179,129 +168,200 @@ export default function ProjectDetailsPage() {
     doc.save(`proyecto_${project.id}.pdf`);
   };
 
-  if (loading) return <Typography>Cargando...</Typography>;
-  if (!project) return <Typography>Proyecto no encontrado</Typography>;
+  const getStatusClass = (status) => {
+    const statusMap = {
+      'Formulación': 'status-formulacion',
+      'Evaluación': 'status-evaluacion',
+      'Activo': 'status-activo',
+      'Finalizado': 'status-finalizado'
+    };
+    return statusMap[status] || 'status-formulacion';
+  };
+
+  const getInitials = (name) => {
+    return name ? name.split(' ').map(n => n[0]).join('').toUpperCase() : '?';
+  };
+
+  if (loading) {
+    return (
+      <div className="loading-container">
+        Cargando proyecto...
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="error-container">
+        <h2 className="error-title">Proyecto no encontrado</h2>
+        <Link to="/projects" className="btn btn-primary">
+          ← Volver a proyectos
+        </Link>
+      </div>
+    );
+  }
 
   const esIntegrante =
     user?.rol === "estudiante" &&
     project.integrantes.some((i) => i.estudiante?.id === user.id);
 
   return (
-    <Container className="project-details-page">
-      <Box className="project-container">
-        <Typography variant="h4" className="project-title">
-          {project.titulo}
-        </Typography>
+    <div className="project-details-container">
+      <div className="project-header">
+        <h1 className="project-title">{project.titulo}</h1>
+        <div className={`project-status-badge ${getStatusClass(project.estado)}`}>
+          {project.estado}
+        </div>
+      </div>
 
-        <Box className="project-info">
-          <Typography><strong>Área:</strong> {project.area}</Typography>
-          <Typography><strong>Docente:</strong> {project.usuarios?.nombre}</Typography>
-          <Typography><strong>Cronograma:</strong> {project.cronograma}</Typography>
-          <Typography><strong>Presupuesto:</strong> {project.presupuesto}</Typography>
-          <Typography><strong>Institución:</strong> {project.institucion}</Typography>
-          <Typography><strong>Estado:</strong> {project.estado}</Typography>
-        </Box>
+      <div className="project-info-grid">
+        <div className="info-card">
+          <div className="info-label">Área</div>
+          <div className="info-value">{project.area}</div>
+        </div>
+        <div className="info-card">
+          <div className="info-label">Docente</div>
+          <div className="info-value">{project.usuarios?.nombre}</div>
+        </div>
+        <div className="info-card">
+          <div className="info-label">Institución</div>
+          <div className="info-value">{project.institucion}</div>
+        </div>
+        <div className="info-card">
+          <div className="info-label">Cronograma</div>
+          <div className="info-value">{project.cronograma}</div>
+        </div>
+        <div className="info-card">
+          <div className="info-label">Presupuesto</div>
+          <div className="info-value">{project.presupuesto}</div>
+        </div>
+      </div>
 
-        <Box className="project-section">
-          <Typography variant="h6">Integrantes</Typography>
-          <ul className="project-ul">
-            {project.integrantes.map((i, idx) => (
-              <li key={idx}>
-                {i.estudiante?.nombre} - ID: {i.estudiante?.identificacion} - Grado: {i.estudiante?.grado}
-              </li>
-            ))}
-          </ul>
-        </Box>
+      <div className="project-section">
+        <h3 className="section-title">Objetivos</h3>
+        <p className="info-value">{project.objetivos}</p>
+      </div>
 
-        <Box className="project-section">
-          <Typography><strong>Observaciones:</strong> {project.observaciones}</Typography>
-        </Box>
+      <div className="project-section">
+        <h3 className="section-title">Integrantes</h3>
+        {project.integrantes.map((integrante, idx) => (
+          <div key={idx} className="integrante-item">
+            <div className="integrante-avatar">
+              {getInitials(integrante.estudiante?.nombre)}
+            </div>
+            <div className="integrante-info">
+              <div className="integrante-nombre">
+                {integrante.estudiante?.nombre}
+              </div>
+              <div className="integrante-detalles">
+                ID: {integrante.estudiante?.identificacion} • Grado: {integrante.estudiante?.grado}
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
 
-        {historial.length > 0 && (
-          <Box className="project-section">
-            <Typography variant="h6">Historial de Estados</Typography>
-            <ul className="project-ul">
-              {historial.map((h, idx) => (
-                <li key={idx}>
-                  <strong>{h.fecha}:</strong> {h.estado} - {h.observaciones || "Sin observaciones"}
-                </li>
-              ))}
-            </ul>
-          </Box>
-        )}
+      <div className="project-section">
+        <h3 className="section-title">Observaciones</h3>
+        <p className="info-value">{project.observaciones || "Sin observaciones"}</p>
+      </div>
 
-        {user?.rol === "coordinador" && (
-          <Box className="estado-form">
-            <Typography variant="h6">Cambiar Estado</Typography>
-            <FormControl fullWidth className="estado-select">
-              <InputLabel>Nuevo Estado</InputLabel>
-              <Select
-                value={estado}
-                onChange={(e) => setEstado(e.target.value)}
-              >
-                <MenuItem value="Formulación">Formulación</MenuItem>
-                <MenuItem value="Evaluación">Evaluación</MenuItem>
-                <MenuItem value="Activo">Activo</MenuItem>
-                <MenuItem value="Finalizado">Finalizado</MenuItem>
-              </Select>
-            </FormControl>
+      {historial.length > 0 && (
+        <div className="project-section">
+          <h3 className="section-title">Historial de Estados</h3>
+          {historial.map((h, idx) => (
+            <div key={idx} className="historial-item">
+              <div className="historial-fecha">{h.fecha}</div>
+              <div className="historial-estado">{h.estado}</div>
+              <div className="historial-observacion">
+                {h.observaciones || "Sin observaciones"}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
 
-            <TextField
-              label="Observación"
-              fullWidth
-              multiline
-              rows={3}
-              className="estado-textarea"
+      {user?.rol === "coordinador" && (
+        <div className="estado-form">
+          <h3 className="estado-form-title">Cambiar Estado del Proyecto</h3>
+          
+          <div className="form-group">
+            <label className="form-label">Nuevo Estado</label>
+            <select
+              className="form-select"
+              value={estado}
+              onChange={(e) => setEstado(e.target.value)}
+            >
+              <option value="Formulación">Formulación</option>
+              <option value="Evaluación">Evaluación</option>
+              <option value="Activo">Activo</option>
+              <option value="Finalizado">Finalizado</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Observación del cambio</label>
+            <textarea
+              className="form-textarea"
+              placeholder="Describe el motivo del cambio de estado..."
               value={observacionEstado}
               onChange={(e) => setObservacionEstado(e.target.value)}
             />
+          </div>
 
-            <Button
-              variant="contained"
-              onClick={cambiarEstado}
-              className="estado-boton"
-            >
-              Guardar cambio de estado
-            </Button>
-          </Box>
+          <button
+            className="btn btn-success"
+            onClick={cambiarEstado}
+          >
+            💾 Guardar cambio de estado
+          </button>
+        </div>
+      )}
+
+      <div className="project-section">
+        <h3 className="section-title">Bitácoras del Proyecto</h3>
+        {project.bitacoras.length > 0 ? (
+          <ul className="project-list">
+            {project.bitacoras.map((bitacora) => (
+              <li key={bitacora.id} className="project-list-item">
+                <Link to={`/bitacora/${bitacora.id}`} className="bitacora-link">
+                  📋 {bitacora.fecha} - {bitacora.descripcion}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        ) : (
+          <div className="sin-bitacoras">
+            📝 No hay bitácoras registradas para este proyecto
+          </div>
         )}
 
-        <Box className="project-section">
-          <Typography variant="h6">Bitácoras</Typography>
-          {project.bitacoras.length > 0 ? (
-            <ul className="project-ul">
-              {project.bitacoras.map((b) => (
-                <li key={b.id}>
-                  <Link to={`/bitacora/${b.id}`}>
-                    {b.fecha} - {b.descripcion}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Typography>No hay bitácoras.</Typography>
-          )}
+        {esIntegrante && (
+          <Link
+            to={`/projects/${project.id}/bitacora/nueva`}
+            className="btn btn-primary"
+            style={{ marginTop: '1rem' }}
+          >
+            ➕ Nueva Bitácora
+          </Link>
+        )}
+      </div>
 
-          {esIntegrante && (
-            <Button
-              variant="outlined"
-              component={Link}
-              to={`/projects/${project.id}/bitacora/nueva`}
-              className="bitacora-nueva-btn"
-            >
-              + Nueva Bitácora
-            </Button>
-          )}
-        </Box>
-
-        <Button
-          variant="outlined"
-          className="pdf-button"
+      <div className="actions-section">
+        <button
+          className="btn btn-secondary"
           onClick={generarPDF}
         >
           📄 Exportar a PDF
-        </Button>
-      </Box>
-    </Container>
+        </button>
+        
+        <Link
+          to="/projects"
+          className="btn btn-primary"
+        >
+          ← Volver a Proyectos
+        </Link>
+      </div>
+    </div>
   );
 }

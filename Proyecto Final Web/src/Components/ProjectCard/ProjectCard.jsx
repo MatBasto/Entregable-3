@@ -1,41 +1,113 @@
-import { Card, CardContent, Typography, Box } from "@mui/material";
+import { 
+  Card, 
+  CardContent, 
+  Typography, 
+  Box, 
+  Chip,
+  Avatar,
+  Divider
+} from "@mui/material";
+import { 
+  Person, 
+  Business
+} from "@mui/icons-material";
 import { Link } from "react-router-dom";
 import "./ProjectCard.css";
 
 export default function ProjectCard({ project }) {
+  // Función para determinar el color del chip según el estado
+  const getStatusChipProps = (estado) => {
+    const statusMap = {
+      'activo': { color: 'success', label: 'Activo' },
+      'completado': { color: 'primary', label: 'Completado' },
+      'en progreso': { color: 'warning', label: 'En Progreso' },
+      'pendiente': { color: 'default', label: 'Pendiente' },
+      'cancelado': { color: 'error', label: 'Cancelado' }
+    };
+    
+    return statusMap[estado?.toLowerCase()] || { color: 'default', label: estado };
+  };
+
+  // Función para obtener las iniciales del área
+  const getAreaInitials = (area) => {
+    return area?.split(' ').map(word => word[0]).join('').toUpperCase() || 'PR';
+  };
+
+  const statusProps = getStatusChipProps(project.estado);
+
   return (
-    <Card className="project-card">
-      <CardContent
-        component={Link}
-        to={`/projects/${project.id}`}
+    <Card className="project-card" elevation={0}>
+      <Box 
+        component={Link} 
+        to={`/projects/${project.id}`} 
         className="project-card-link"
       >
-        <Typography className="project-title">
-          {project.titulo}
-        </Typography>
-        <Typography className="project-area">
-          Área: {project.area}
-        </Typography>
-        <Typography className="project-card-section">
-          Institución: {project.institucion}
-        </Typography>
-        <Typography className="project-card-section">
-          Docente: {project.docente}
-        </Typography>
-        <Typography className="project-card-section">
-          Estado: <strong>{project.estado}</strong>
-        </Typography>
+        {/* Header con Avatar y Estado */}
+        <Box className="project-card-header">
+          <Avatar className="project-area-avatar">
+            {getAreaInitials(project.area)}
+          </Avatar>
+          <Chip
+            label={statusProps.label}
+            color={statusProps.color}
+            size="small"
+            className="project-status-chip"
+          />
+        </Box>
 
-        {project?.foto && (
-          <Box className="project-img-container">
-            <img
-              src={project.foto}
-              alt="imagen del proyecto"
-              className="project-card-img"
-            />
+
+
+        <CardContent className="project-card-content">
+          {/* Título del proyecto */}
+          <Typography 
+            variant="h6" 
+            className="project-title"
+            title={project.titulo}
+          >
+            {project.titulo}
+          </Typography>
+
+          {/* Área del proyecto */}
+          <Typography variant="body2" className="project-area">
+            {project.area}
+          </Typography>
+
+          <Divider className="project-divider" />
+
+          {/* Información adicional */}
+          <Box className="project-info-section">
+            <Box className="project-info-item">
+              <Business className="info-icon" />
+              <Typography variant="body2" className="info-text">
+                {project.institucion}
+              </Typography>
+            </Box>
+
+            <Box className="project-info-item">
+              <Person className="info-icon" />
+              <Typography variant="body2" className="info-text">
+                {project.docente}
+              </Typography>
+            </Box>
           </Box>
-        )}
-      </CardContent>
+
+          {/* Footer con información adicional si existe */}
+          {(project.fechaCreacion || project.participantes) && (
+            <Box className="project-card-footer">
+              {project.fechaCreacion && (
+                <Typography variant="caption" className="project-date">
+                  Creado: {new Date(project.fechaCreacion).toLocaleDateString()}
+                </Typography>
+              )}
+              {project.participantes && (
+                <Typography variant="caption" className="project-participants">
+                  {project.participantes} participantes
+                </Typography>
+              )}
+            </Box>
+          )}
+        </CardContent>
+      </Box>
     </Card>
   );
 }

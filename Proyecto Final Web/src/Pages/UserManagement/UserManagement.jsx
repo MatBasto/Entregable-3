@@ -159,15 +159,49 @@ export default function UserManagement() {
       </Typography>
 
       <Box className="formulario-usuario">
-        <Typography variant="h6" className="subtitulo">Crear nuevo usuario</Typography>
-        {error && <Alert severity="error" className="mensaje-error">{error}</Alert>}
+        <Typography variant="h6" className="subtitulo">
+          Crear nuevo usuario
+        </Typography>
+        
+        {error && (
+          <Alert severity="error" className="mensaje-error">
+            {error}
+          </Alert>
+        )}
 
         <Box className="campos-formulario">
-          <TextField label="Nombre" name="nombre" value={nuevoUsuario.nombre} onChange={handleChange} />
-          <TextField label="Correo" name="correo" value={nuevoUsuario.correo} onChange={handleChange} />
-          <TextField label="Contraseña" name="password" type="password" value={nuevoUsuario.password} onChange={handleChange} />
-          <TextField label="Identificación" name="identificacion" value={nuevoUsuario.identificacion} onChange={handleChange} />
-          <TextField select label="Rol" name="rol" value={nuevoUsuario.rol} onChange={handleChange}>
+          <TextField 
+            label="Nombre" 
+            name="nombre" 
+            value={nuevoUsuario.nombre} 
+            onChange={handleChange} 
+          />
+          <TextField 
+            label="Correo" 
+            name="correo" 
+            value={nuevoUsuario.correo} 
+            onChange={handleChange} 
+          />
+          <TextField 
+            label="Contraseña" 
+            name="password" 
+            type="password" 
+            value={nuevoUsuario.password} 
+            onChange={handleChange} 
+          />
+          <TextField 
+            label="Identificación" 
+            name="identificacion" 
+            value={nuevoUsuario.identificacion} 
+            onChange={handleChange} 
+          />
+          <TextField 
+            select 
+            label="Rol" 
+            name="rol" 
+            value={nuevoUsuario.rol} 
+            onChange={handleChange}
+          >
             <MenuItem value="estudiante">Estudiante</MenuItem>
             <MenuItem value="docente">Docente</MenuItem>
             <MenuItem value="coordinador">Coordinador</MenuItem>
@@ -178,7 +212,9 @@ export default function UserManagement() {
         </Box>
       </Box>
 
-      <Typography variant="h6" className="subtitulo">Usuarios registrados</Typography>
+      <Typography variant="h6" className="subtitulo">
+        Usuarios registrados
+      </Typography>
 
       <Table className="tabla-usuarios">
         <TableHead>
@@ -198,42 +234,85 @@ export default function UserManagement() {
             <TableRow key={u.id}>
               <TableCell>
                 {modoEdicion === u.id ? (
-                  <TextField name="nombre" value={usuarioEditado.nombre} onChange={handleEditChange} />
-                ) : u.nombre}
+                  <TextField 
+                    name="nombre" 
+                    value={usuarioEditado.nombre} 
+                    onChange={handleEditChange} 
+                  />
+                ) : (
+                  u.nombre
+                )}
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (
-                  <TextField name="correo" value={usuarioEditado.correo} onChange={handleEditChange} />
-                ) : u.correo}
+                  <TextField 
+                    name="correo" 
+                    value={usuarioEditado.correo} 
+                    onChange={handleEditChange} 
+                  />
+                ) : (
+                  u.correo
+                )}
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (
-                  <TextField select name="rol" value={usuarioEditado.rol || ""} onChange={handleEditChange}>
+                  <TextField 
+                    select 
+                    name="rol" 
+                    value={usuarioEditado.rol || ""} 
+                    onChange={handleEditChange}
+                  >
                     <MenuItem value="estudiante">Estudiante</MenuItem>
                     <MenuItem value="docente">Docente</MenuItem>
                     <MenuItem value="coordinador">Coordinador</MenuItem>
                   </TextField>
-                ) : u.rol || <em>Sin rol</em>}
+                ) : (
+                  u.rol || <em>Sin rol</em>
+                )}
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (
-                  <TextField name="identificacion" value={usuarioEditado.identificacion || ""} onChange={handleEditChange} />
-                ) : u.identificacion || "-"}
+                  <TextField 
+                    name="identificacion" 
+                    value={usuarioEditado.identificacion || ""} 
+                    onChange={handleEditChange} 
+                  />
+                ) : (
+                  u.identificacion || "-"
+                )}
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (
-                  <TextField name="edad" value={usuarioEditado.edad || ""} onChange={handleEditChange} />
-                ) : u.edad || "-"}
+                  <TextField 
+                    name="edad" 
+                    value={usuarioEditado.edad || ""} 
+                    onChange={handleEditChange} 
+                  />
+                ) : (
+                  u.edad || "-"
+                )}
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (
-                  <TextField name="colegio" value={usuarioEditado.colegio || ""} onChange={handleEditChange} />
-                ) : u.colegio || "-"}
+                  <TextField 
+                    name="colegio" 
+                    value={usuarioEditado.colegio || ""} 
+                    onChange={handleEditChange} 
+                  />
+                ) : (
+                  u.colegio || "-"
+                )}
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (
-                  <TextField name="grado" value={usuarioEditado.grado || ""} onChange={handleEditChange} />
-                ) : u.grado || "-"}
+                  <TextField 
+                    name="grado" 
+                    value={usuarioEditado.grado || ""} 
+                    onChange={handleEditChange} 
+                  />
+                ) : (
+                  u.grado || "-"
+                )}
               </TableCell>
               <TableCell>
                 {modoEdicion === u.id ? (

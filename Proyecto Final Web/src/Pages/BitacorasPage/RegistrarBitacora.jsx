@@ -1,18 +1,7 @@
 import { useState } from "react";
-import {
-  Container,
-  Typography,
-  TextField,
-  Button,
-  Box,
-  IconButton,
-} from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { useAuth } from "../../Context/AuthContext";
 import { supabase } from "../../supabase";
-import DeleteIcon from "@mui/icons-material/Delete";
-import AttachFileIcon from "@mui/icons-material/AttachFile";
-import ImageIcon from "@mui/icons-material/Image";
 import "./RegistrarBitacora.css";
 
 export default function RegistrarBitacora() {
@@ -27,6 +16,8 @@ export default function RegistrarBitacora() {
     imagenes: [],
     archivos: [],
   });
+
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -68,112 +59,144 @@ export default function RegistrarBitacora() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const fotos = await subirArchivos();
+    try {
+      const fotos = await subirArchivos();
 
-    const { error } = await supabase.from("bitacoras").insert({
-      proyecto_id: proyectoId,
-      autor_id: user.id,
-      fecha: form.fecha,
-      descripcion: form.descripcion,
-      observaciones: form.observaciones,
-      fotos,
-    });
+      const { error } = await supabase.from("bitacoras").insert({
+        proyecto_id: proyectoId,
+        autor_id: user.id,
+        fecha: form.fecha,
+        descripcion: form.descripcion,
+        observaciones: form.observaciones,
+        fotos,
+      });
 
-    if (!error) {
-      alert("Bitácora registrada correctamente");
-      navigate(`/projects/${proyectoId}`);
-    } else {
-      console.error("Error al registrar bitácora", error);
-      alert("Ocurrió un error al registrar la bitácora.");
+      if (!error) {
+        alert("Bitácora registrada correctamente");
+        navigate(`/projects/${proyectoId}`);
+      } else {
+        console.error("Error al registrar bitácora", error);
+        alert("Ocurrió un error al registrar la bitácora.");
+      }
+    } catch (error) {
+      console.error("Error inesperado:", error);
+      alert("Ocurrió un error inesperado.");
+    } finally {
+      setLoading(false);
     }
   };
 
+  const todosLosArchivos = [...form.imagenes, ...form.archivos];
+
   return (
-    <Container className="bitacora-form">
-      <Typography variant="h4">Registrar Bitácora</Typography>
-      <form onSubmit={handleSubmit}>
-        <TextField
-          label="Fecha"
-          type="date"
-          name="fecha"
-          fullWidth
-          InputLabelProps={{ shrink: true }}
-          value={form.fecha}
-          onChange={handleChange}
-          required
-        />
+    <div className="registrar-bitacora-container">
+      <h1 className="registrar-bitacora-title">Registrar Bitácora</h1>
+      
+      <form className="bitacora-form" onSubmit={handleSubmit}>
+        <div className="form-group">
+          <label className="form-label">Fecha</label>
+          <input
+            type="date"
+            name="fecha"
+            className="form-input"
+            value={form.fecha}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <TextField
-          label="Descripción"
-          name="descripcion"
-          multiline
-          rows={4}
-          fullWidth
-          value={form.descripcion}
-          onChange={handleChange}
-          required
-        />
+        <div className="form-group">
+          <label className="form-label">Descripción</label>
+          <textarea
+            name="descripcion"
+            className="form-input form-textarea"
+            placeholder="Describe las actividades realizadas..."
+            value={form.descripcion}
+            onChange={handleChange}
+            required
+          />
+        </div>
 
-        <TextField
-          label="Observaciones"
-          name="observaciones"
-          multiline
-          rows={3}
-          fullWidth
-          value={form.observaciones}
-          onChange={handleChange}
-        />
+        <div className="form-group">
+          <label className="form-label">Observaciones</label>
+          <textarea
+            name="observaciones"
+            className="form-input form-textarea large"
+            placeholder="Anota observaciones importantes..."
+            value={form.observaciones}
+            onChange={handleChange}
+          />
+        </div>
 
-        <Box className="upload-section">
-          <Button variant="contained" component="label" startIcon={<ImageIcon />}>
-            Subir Imágenes
-            <input
-              type="file"
-              hidden
-              multiple
-              accept="image/*"
-              onChange={(e) => handleFileChange(e, "imagenes")}
-            />
-          </Button>
+        <div className="form-group">
+          <label className="form-label">Archivos adjuntos</label>
+          <div className="upload-section">
+            <label className="upload-btn upload-btn-primary">
+              <span>📷</span>
+              <span>Subir Imágenes</span>
+              <input
+                type="file"
+                className="upload-input"
+                multiple
+                accept="image/*"
+                onChange={(e) => handleFileChange(e, "imagenes")}
+              />
+            </label>
 
-          <Button variant="outlined" component="label" startIcon={<AttachFileIcon />}>
-            Adjuntar Archivos
-            <input
-              type="file"
-              hidden
-              multiple
-              onChange={(e) => handleFileChange(e, "archivos")}
-            />
-          </Button>
-        </Box>
+            <label className="upload-btn upload-btn-secondary">
+              <span>📎</span>
+              <span>Adjuntar Archivos</span>
+              <input
+                type="file"
+                className="upload-input"
+                multiple
+                onChange={(e) => handleFileChange(e, "archivos")}
+              />
+            </label>
+          </div>
+        </div>
 
-        <Box className="preview-section">
-          <Typography variant="subtitle1">Archivos Seleccionados:</Typography>
-          {[...form.imagenes, ...form.archivos].map((file, index) => (
-            <Box key={index} display="flex" alignItems="center" gap={1} mt={1}>
-              <Typography>{file.name}</Typography>
-              <IconButton onClick={() => eliminarArchivo(
-                form.imagenes.includes(file) ? "imagenes" : "archivos",
-                form.imagenes.includes(file)
-                  ? form.imagenes.indexOf(file)
-                  : form.archivos.indexOf(file)
-              )}>
-                <DeleteIcon color="error" />
-              </IconButton>
-            </Box>
-          ))}
-        </Box>
+        <div className="preview-section">
+          <h3 className="preview-title">Archivos Seleccionados:</h3>
+          {todosLosArchivos.length > 0 ? (
+            todosLosArchivos.map((file, index) => (
+              <div key={index} className="archivo-item">
+                <div className="archivo-info">
+                  <span>{form.imagenes.includes(file) ? "🖼️" : "📄"}</span>
+                  <span className="archivo-nombre">{file.name}</span>
+                </div>
+                <button
+                  type="button"
+                  className="delete-btn"
+                  onClick={() => eliminarArchivo(
+                    form.imagenes.includes(file) ? "imagenes" : "archivos",
+                    form.imagenes.includes(file)
+                      ? form.imagenes.indexOf(file)
+                      : form.archivos.indexOf(file)
+                  )}
+                  title="Eliminar archivo"
+                >
+                  🗑️
+                </button>
+              </div>
+            ))
+          ) : (
+            <div className="sin-archivos">
+              No se han seleccionado archivos
+            </div>
+          )}
+        </div>
 
-        <Button
+        <button
           type="submit"
-          variant="contained"
-          color="primary"
-          className="submit-bitacora"
+          className="submit-btn"
+          disabled={loading}
         >
-          Guardar Bitácora
-        </Button>
+          {loading ? "Guardando..." : "Guardar Bitácora"}
+        </button>
       </form>
-    </Container>
+    </div>
   );
 }

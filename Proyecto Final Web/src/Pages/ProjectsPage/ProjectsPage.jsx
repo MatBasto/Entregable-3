@@ -78,65 +78,118 @@ export default function ProjectsPage() {
     doc.save("reporte_general_proyectos.pdf");
   };
 
+  const limpiarFiltros = () => {
+    setFiltro({
+      texto: "",
+      institucion: "",
+      docente: "",
+    });
+  };
+
+  const hayFiltrosActivos = filtro.texto || filtro.institucion || filtro.docente;
+
   return (
-    <Container className="projects-page">
-      <Typography variant="h4" className="projects-title">
-        Proyectos Registrados
-      </Typography>
+    <div className="projects-page">
+      <Container className="projects-container">
+        <div className="projects-header">
+          <Typography className="projects-title">
+            Proyectos Registrados
+          </Typography>
+          <Typography className="projects-subtitle">
+            Explora y gestiona todos los proyectos académicos
+          </Typography>
+        </div>
 
-      <Box className="projects-filters">
-        <TextField
-          label="Buscar por título"
-          value={filtro.texto}
-          onChange={(e) => setFiltro({ ...filtro, texto: e.target.value })}
-        />
-        <TextField
-          select
-          label="Institución"
-          value={filtro.institucion}
-          onChange={(e) => setFiltro({ ...filtro, institucion: e.target.value })}
-        >
-          <MenuItem value="">Todas</MenuItem>
-          {instituciones.map((i, idx) => (
-            <MenuItem key={idx} value={i}>{i}</MenuItem>
-          ))}
-        </TextField>
-        <TextField
-          select
-          label="Docente"
-          value={filtro.docente}
-          onChange={(e) => setFiltro({ ...filtro, docente: e.target.value })}
-        >
-          <MenuItem value="">Todos</MenuItem>
-          {docentes.map((d, idx) => (
-            <MenuItem key={idx} value={d}>{d}</MenuItem>
-          ))}
-        </TextField>
-      </Box>
+        <div className="filters-section">
+          <Typography className="filters-title">
+            🔍 Filtros de búsqueda
+          </Typography>
+          <div className="filters-grid">
+            <div className="filter-field">
+              <TextField
+                label="Buscar por título"
+                value={filtro.texto}
+                onChange={(e) => setFiltro({ ...filtro, texto: e.target.value })}
+                placeholder="Ingresa el título del proyecto..."
+              />
+            </div>
+            <div className="filter-field">
+              <TextField
+                select
+                label="Institución"
+                value={filtro.institucion}
+                onChange={(e) => setFiltro({ ...filtro, institucion: e.target.value })}
+              >
+                <MenuItem value="">Todas las instituciones</MenuItem>
+                {instituciones.map((i, idx) => (
+                  <MenuItem key={idx} value={i}>
+                    {i}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </div>
+            <div className="filter-field">
+              <TextField
+                select
+                label="Docente"
+                value={filtro.docente}
+                onChange={(e) => setFiltro({ ...filtro, docente: e.target.value })}
+              >
+                <MenuItem value="">Todos los docentes</MenuItem>
+                {docentes.map((d, idx) => (
+                  <MenuItem key={idx} value={d}>
+                    {d}
+                  </MenuItem>
+                ))}
+              </TextField>
+            </div>
+          </div>
+        </div>
 
-      {user && (
-        <Button
-          variant="outlined"
-          className="report-button"
-          onClick={generarReporteGeneral}
-        >
-          📄 Generar reporte general
-        </Button>
-      )}
+        {user && (
+          <div className="actions-section">
+            <Button className="report-button" onClick={generarReporteGeneral}>
+              📄 Generar reporte general
+            </Button>
+          </div>
+        )}
 
-      <Box className="projects-grid">
-        {proyectosFiltrados.map((project) => (
-          <Box key={project.id} className="project-card-wrapper">
-            <ProjectCard project={project} />
-          </Box>
-        ))}
-      </Box>
+        <div className="results-counter">
+          <Typography className="results-count">
+            {proyectosFiltrados.length} proyecto{proyectosFiltrados.length !== 1 ? 's' : ''} encontrado{proyectosFiltrados.length !== 1 ? 's' : ''}
+          </Typography>
+          {hayFiltrosActivos && (
+            <button className="clear-filters" onClick={limpiarFiltros}>
+              Limpiar filtros
+            </button>
+          )}
+        </div>
 
-      {proyectosFiltrados.length === 0 && (
-        <Typography className="no-projects-message">
-          No se encontraron proyectos.
-        </Typography>
-      )}
-    </Container>
+        <div className="projects-grid-container">
+          {proyectosFiltrados.length > 0 ? (
+            <div className="projects-grid">
+              {proyectosFiltrados.map((project) => (
+                <div key={project.id} className="project-card-wrapper">
+                  <ProjectCard project={project} />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-projects-container">
+              <div className="no-projects-icon">📂</div>
+              <Typography className="no-projects-title">
+                No se encontraron proyectos
+              </Typography>
+              <Typography className="no-projects-message">
+                {hayFiltrosActivos 
+                  ? "Intenta ajustar los filtros de búsqueda para encontrar más resultados."
+                  : "Aún no hay proyectos registrados en el sistema."
+                }
+              </Typography>
+            </div>
+          )}
+        </div>
+      </Container>
+    </div>
   );
 }

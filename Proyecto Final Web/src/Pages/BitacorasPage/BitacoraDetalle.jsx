@@ -1,5 +1,4 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { Container, Typography, Box, Button, Link as MuiLink } from "@mui/material";
 import { useEffect, useState } from "react";
 import { supabase } from "../../supabase";
 import "./BitacoraDetalle.css";
@@ -29,69 +28,93 @@ export default function BitacoraDetalle() {
     fetchBitacora();
   }, [id]);
 
-  if (loading) return <Typography>Cargando...</Typography>;
-  if (!bitacora)
-    return (
-      <Container className="bitacora-container">
-        <Typography variant="h5">Bitácora no encontrada</Typography>
-        <Button onClick={() => navigate(-1)}>Volver</Button>
-      </Container>
-    );
-
   const isImage = (url) => {
     const extension = url.split(".").pop().toLowerCase();
     return ["jpg", "jpeg", "png", "gif", "webp"].includes(extension);
   };
 
+  if (loading) {
+    return (
+      <div className="bitacora-loading">
+        Cargando bitácora...
+      </div>
+    );
+  }
+
+  if (!bitacora) {
+    return (
+      <div className="bitacora-error">
+        <h2 className="bitacora-error-title">Bitácora no encontrada</h2>
+        <button 
+          className="bitacora-volver-btn"
+          onClick={() => navigate(-1)}
+        >
+          ← Volver
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <Container className="bitacora-container">
-      <Typography variant="h4" className="bitacora-title">
+    <div className="bitacora-detalle-container">
+      <h1 className="bitacora-detalle-title">
         Bitácora del {bitacora.fecha}
-      </Typography>
+      </h1>
 
-      <Typography>
+      <div className="bitacora-proyecto-info">
         <strong>Proyecto:</strong> {bitacora.proyecto?.titulo || bitacora.proyecto_id}
-      </Typography>
+      </div>
 
-      <Typography className="bitacora-section">
-        <strong>Descripción:</strong>
-      </Typography>
-      <Typography>{bitacora.descripcion}</Typography>
+      <div className="bitacora-seccion">
+        <h3 className="bitacora-seccion-titulo">Descripción</h3>
+        <p className="bitacora-texto">{bitacora.descripcion}</p>
+      </div>
 
-      <Typography className="bitacora-section">
-        <strong>Observaciones:</strong>
-      </Typography>
-      <Typography>{bitacora.observaciones}</Typography>
+      <div className="bitacora-seccion">
+        <h3 className="bitacora-seccion-titulo">Observaciones</h3>
+        <p className="bitacora-texto">{bitacora.observaciones}</p>
+      </div>
 
-      <Typography className="bitacora-section">
-        <strong>Archivos adjuntos:</strong>
-      </Typography>
-      <Box className="bitacora-fotos">
-        {bitacora.fotos?.length > 0 ? (
-          bitacora.fotos.map((file, index) =>
-            isImage(file) ? (
-              <img
-                key={index}
-                src={file}
-                alt={`evidencia-${index}`}
-                className="bitacora-img"
-              />
-            ) : (
-              <Typography key={index}>
-                📎 <MuiLink href={file} target="_blank" rel="noopener noreferrer">
-                  Descargar archivo {index + 1}
-                </MuiLink>
-              </Typography>
+      <div className="bitacora-seccion">
+        <h3 className="bitacora-seccion-titulo">Archivos adjuntos</h3>
+        <div className="bitacora-archivos-grid">
+          {bitacora.fotos && bitacora.fotos.length > 0 ? (
+            bitacora.fotos.map((file, index) =>
+              isImage(file) ? (
+                <div key={index} className="bitacora-imagen-card">
+                  <img
+                    src={file}
+                    alt={`Evidencia ${index + 1}`}
+                    className="bitacora-imagen"
+                  />
+                </div>
+              ) : (
+                <a
+                  key={index}
+                  href={file}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bitacora-archivo-link"
+                >
+                  <span className="bitacora-archivo-icon">📎</span>
+                  <span>Descargar archivo {index + 1}</span>
+                </a>
+              )
             )
-          )
-        ) : (
-          <Typography>No se adjuntaron archivos.</Typography>
-        )}
-      </Box>
+          ) : (
+            <div className="bitacora-sin-archivos">
+              No se adjuntaron archivos.
+            </div>
+          )}
+        </div>
+      </div>
 
-      <Button variant="outlined" onClick={() => navigate(-1)}>
+      <button 
+        className="bitacora-volver-btn"
+        onClick={() => navigate(-1)}
+      >
         ← Volver al proyecto
-      </Button>
-    </Container>
+      </button>
+    </div>
   );
 }
